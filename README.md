@@ -1,4 +1,6 @@
-# agy-toolkit
+# chiron
+
+The name is a nod to the Greek mythological centaur which guided the heroes through challenges.
 
 A reusable, project-agnostic toolkit for [Antigravity](https://antigravity.google). It provides skills, rules, lifecycle hooks, subagents, optional local project memory, and GitHub + Perplexity MCP setup.
 
