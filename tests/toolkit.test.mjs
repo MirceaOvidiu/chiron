@@ -231,17 +231,17 @@ test('every skill has name+description frontmatter matching its directory', () =
   const dir = path.join(inst.KIT_DIR, '.agents/skills');
   for (const s of fs.readdirSync(dir)) {
     const t = fs.readFileSync(path.join(dir, s, 'SKILL.md'), 'utf8');
-    assert.match(t, new RegExp(`^---\\nname: ${s}\\ndescription:`));
+    assert.match(t, new RegExp(`^---\\r?\\nname: ${s}\\r?\\ndescription:`));
   }
 });
 
 test('always-on rules exist; STE rule follows its own sentence-length limit', () => {
   const dir = path.join(inst.KIT_DIR, '.agents/rules');
   for (const f of ['coding-principles.md', 'simplified-technical-english.md']) {
-    assert.match(fs.readFileSync(path.join(dir, f), 'utf8'), /^---\ntrigger: always_on\n---/);
+    assert.match(fs.readFileSync(path.join(dir, f), 'utf8'), /^---\r?\ntrigger: always_on\r?\n---/);
   }
   const body = fs.readFileSync(path.join(dir, 'simplified-technical-english.md'), 'utf8').split('---').slice(2).join('');
-  const sentences = body.replace(/`[^`]*`|"[^"]*"|\(https?:[^)]*\)/g, 'x').split(/[.:;?!\n]+/).filter((s) => s.trim());
+  const sentences = body.replace(/`[^`]*`|"[^"]*"|\(https?:[^)]*\)/g, 'x').split(/[.:;?!\r\n]+/).filter((s) => s.trim());
   const long = sentences.filter((s) => s.trim().split(/\s+/).length > 25);
   assert.deepEqual(long, []);
 });
