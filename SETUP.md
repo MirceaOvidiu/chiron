@@ -10,12 +10,32 @@
 ## Install into a repository
 
 ```powershell
-agk install [target] [--memory] [--dry-run]
+agk install [target] [--profile standard|minimal] [--memory] [--dry-run]
+agk scan [target] [--dry-run]
 ```
 
 - Default target is the current directory. Re-running is safe (idempotent).
+- `--profile minimal` installs only the rules and the 4 core skills (`plan`, `implement`, `review`, `commit-prep`), without hooks or subagents.
 - `--memory` also installs `.agents/memory/*.md` templates and ignores that folder locally.
+- `agk scan` detects the stack, scripts, and top-level folders and updates bounded sections in `.agents/memory/`.
 - Outside a git repo no ignore rules are written (reported in the output).
+
+## Install as a global Antigravity plugin
+
+```powershell
+agk plugin install [--github-write] [--dry-run]
+agk plugin build dist/agy-toolkit
+```
+
+`agk plugin install` builds the bundle directly into `~/.gemini/config/plugins/agy-toolkit` (`plugin.json`, `skills/`, `agents/`, `rules/AGENTS.md`, `hooks.json`, `scripts/`, `mcp_config.json`).
+
+## Export rules for other AI tools
+
+```powershell
+agk export [target] --format agents-md|claude|copilot [--force] [--dry-run]
+```
+
+Generates `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md` from `kit/.agents/rules/`. Refuses to overwrite an existing file without `--force`.
 
 Commit `.agents/skills` and `.agents/rules` if you want your team to share them; the manifest and memory stay local.
 

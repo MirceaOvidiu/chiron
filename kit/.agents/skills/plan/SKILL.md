@@ -11,7 +11,8 @@ description: >-
 1. Restate the goal in one or two sentences. List assumptions; ask the user only about
    ambiguities that materially change behavior or safety, otherwise choose a default and say so.
 2. Investigate: read the relevant code, tests, build files, and existing conventions
-   (`AGENTS.md`, `GEMINI.md`, `.agents/memory/` if present). Do not guess at structure.
+   (`AGENTS.md`, `GEMINI.md`, `.agents/memory/` if present). For broad unfamiliar codebases,
+   delegate exploration to the `agk-researcher` subagent. Do not guess at structure.
 3. Produce the plan:
    - **Success criteria**: observable behavior that proves the goal is met.
    - **Steps**: small, ordered, each naming the files involved.

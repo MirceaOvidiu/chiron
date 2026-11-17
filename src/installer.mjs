@@ -25,10 +25,24 @@ function walk(dir, base = dir) {
   });
 }
 
-/** Files to install: kit/** (relative to repo root) and optionally memory templates under .agents/memory/. */
-export function plannedFiles({ memory = false } = {}) {
+const MINIMAL_SKILLS = new Set(['plan', 'implement', 'review', 'commit-prep']);
+export const PROFILES = ['standard', 'minimal'];
+
+function includeInProfile(rel, profile) {
+  if (profile === 'standard') return true;
+  if (profile !== 'minimal') throw new Error(`Unknown profile "${profile}". Use: ${PROFILES.join(', ')}`);
+  if (rel.startsWith('.agents/rules/')) return true;
+  const m = rel.match(/^\.agents\/skills\/([^/]+)\//);
+  return !!(m && MINIMAL_SKILLS.has(m[1]));
+}
+
+/** Files to install: kit/** (filtered by profile) and optionally memory templates under .agents/memory/. */
+export function plannedFiles({ memory = false, profile = 'standard' } = {}) {
+  if (!PROFILES.includes(profile)) throw new Error(`Unknown profile "${profile}". Use: ${PROFILES.join(', ')}`);
   const map = new Map();
-  for (const rel of walk(KIT_DIR)) map.set(rel, path.join(KIT_DIR, rel));
+  for (const rel of walk(KIT_DIR)) {
+    if (includeInProfile(rel, profile)) map.set(rel, path.join(KIT_DIR, rel));
+  }
   if (memory) for (const rel of walk(MEMORY_TEMPLATES)) map.set(`.agents/memory/${rel}`, path.join(MEMORY_TEMPLATES, rel));
   return map;
 }
@@ -87,14 +101,14 @@ export function removeExcludes(target) {
  * Install or upgrade. Returns a report; with dryRun nothing is written.
  * Works for first install, repeat install, upgrade, and upgrade from a pre-manifest install.
  */
-export function install(target, { memory = false, dryRun = false } = {}) {
+export function install(target, { memory = false, dryRun = false, profile = 'standard' } = {}) {
   target = path.resolve(target);
   if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) throw new Error(`Target is not a directory: ${target}`);
-  const planned = plannedFiles({ memory });
+  const planned = plannedFiles({ memory, profile });
   const prev = readManifest(target);
   const prevFiles = prev?.files ?? {};
   const files = { ...prevFiles };
-  const report = { created: [], updated: [], unchanged: [], preserved: [], removed: [], keptObsolete: [], dryRun };
+  const report = { created: [], updated: [], unchanged: [], preserved: [], removed: [], keptObsolete: [], dryRun, profile };
 
   for (const [rel, src] of planned) {
     const dest = path.join(target, rel);
@@ -130,7 +144,7 @@ export function install(target, { memory = false, dryRun = false } = {}) {
   }
 
   if (!dryRun) {
-    writeManifest(target, files, { memory });
+    writeManifest(target, files, { memory, profile, ...(prev?.scanHash ? { scanHash: prev.scanHash } : {}) });
     const patterns = [`/${MANIFEST_REL}`];
     if (memory) patterns.push('/.agents/memory/'); // project memory stays local, never in team commits
     report.exclude = addExcludes(target, patterns);

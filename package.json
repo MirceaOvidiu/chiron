@@ -1,10 +1,13 @@
 {
   "name": "agy-toolkit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Reusable Antigravity toolkit: skills, rules, optional project memory, and GitHub + Perplexity MCP setup.",
   "type": "module",
   "bin": { "agk": "src/cli.mjs" },
   "engines": { "node": ">=20" },
-  "scripts": { "test": "node --test \"tests/*.test.mjs\"" },
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
+    "check:ste": "node src/cli.mjs check-ste kit"
+  },
   "license": "MIT"
 }

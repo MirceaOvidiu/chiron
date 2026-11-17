@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+- Add MIT `LICENSE`.
+- Add lifecycle hooks (`kit/.agents/hooks.json`, `kit/.agents/scripts/hooks.mjs`) for `SessionStart`, `PreToolUse`, `PostToolUse`, and `Stop`.
+- Add read-only subagent definitions (`agk-reviewer`, `agk-researcher`) under `kit/.agents/agents/`.
+- Add `agk scan` (`src/scanner.mjs`) to auto-discover stack/commands into `.agents/memory/` and detect stale memory in `agk verify`.
+- Add `agk plugin build` and `agk plugin install` (`src/plugin.mjs`) to package the toolkit as a native Antigravity plugin.
+- Add `agk export` (`src/export.mjs`) to generate `AGENTS.md`, `CLAUDE.md`, or `.github/copilot-instructions.md`.
+- Add `--profile standard|minimal` to `agk install`.
+- Add `agk check-ste` (`src/ste-check.mjs`), behavioral eval tests (`tests/evals.test.mjs`), `--live` check in `agk mcp doctor`, and GitHub Actions CI (`.github/workflows/ci.yml`).
+
 ## 0.2.0
 
 - Add always-on rule `coding-principles` (think before coding, simplicity first, surgical changes, goal-driven execution), replaces `thinking-and-goals`.

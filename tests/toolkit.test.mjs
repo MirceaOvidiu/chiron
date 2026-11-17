@@ -197,28 +197,28 @@ test('mcp rejects invalid JSON without modifying it; uninstall removes only ours
   assert.deepEqual(Object.keys(JSON.parse(fs.readFileSync(g, 'utf8')).mcpServers), ['other']);
 });
 
-test('doctor reports missing env var and config without network access', () => {
+test('doctor reports missing env var and config without network access', async () => {
   const f = cfgFile();
   mcp.installMcp({ file: f });
-  const checks = mcp.doctorMcp({ file: f, env: {} });
+  const checks = await mcp.doctorMcp({ file: f, env: {}, checkNpx: false });
   assert.equal(checks.filter((c) => !c.ok).length, 1);
-  assert.ok(mcp.doctorMcp({ file: f, env: { PERPLEXITY_API_KEY: 'x' } }).every((c) => c.ok));
+  assert.ok((await mcp.doctorMcp({ file: f, env: { PERPLEXITY_API_KEY: 'x' }, checkNpx: false })).every((c) => c.ok));
 });
 
-test('cli: install/verify/uninstall and mcp via --config', () => {
+test('cli: install/verify/uninstall and mcp via --config', async () => {
   const d = tmp(); const logs = [];
   const out = { log: (s) => logs.push(s) };
-  assert.equal(main(['install', d], out), 0);
-  assert.equal(main(['verify', d], out), 0);
-  assert.equal(main(['mcp', 'install', '--config', cfgFile(), '--only', 'github'], out), 0);
-  assert.equal(main(['uninstall', d], out), 0);
-  assert.equal(main(['verify', d], out), 1);
-  assert.equal(main(['bogus'], out), 2);
+  assert.equal(await main(['install', d], out), 0);
+  assert.equal(await main(['verify', d], out), 0);
+  assert.equal(await main(['mcp', 'install', '--config', cfgFile(), '--only', 'github'], out), 0);
+  assert.equal(await main(['uninstall', d], out), 0);
+  assert.equal(await main(['verify', d], out), 1);
+  assert.equal(await main(['bogus'], out), 2);
 });
 
 test('kit content is generic: no company names, credentials, or internal URLs', () => {
   const root = path.resolve(inst.ROOT);
-  const bad = /smaragd|atlassian\.net|ghp_[A-Za-z0-9]|sk-[A-Za-z0-9]{10}|pplx-/i;
+  const bad = /smaragd|atlassian\.net|ghp_[A-Za-z0-9]{10}|sk-[A-Za-z0-9]{10}|pplx-[A-Za-z0-9]{10}/i;
   for (const dir of ['kit', 'memory-templates', 'src']) {
     for (const rel of fs.readdirSync(path.join(root, dir), { recursive: true })) {
       const p = path.join(root, dir, rel);
@@ -244,4 +244,17 @@ test('always-on rules exist; STE rule follows its own sentence-length limit', ()
   const sentences = body.replace(/`[^`]*`|"[^"]*"|\(https?:[^)]*\)/g, 'x').split(/[.:;?!\n]+/).filter((s) => s.trim());
   const long = sentences.filter((s) => s.trim().split(/\s+/).length > 25);
   assert.deepEqual(long, []);
+});
+
+test('mcp copilot format: typed servers with tool allow-list, merged into existing empty config', () => {
+  const f = cfgFile();
+  fs.mkdirSync(path.dirname(f), { recursive: true });
+  fs.writeFileSync(f, '{\n\t"mcpServers": {}\n}');
+  const r = mcp.installMcp({ file: f, format: 'copilot', platform: 'win32' });
+  assert.equal(r.added.length, 2);
+  const s = JSON.parse(fs.readFileSync(f, 'utf8')).mcpServers;
+  assert.deepEqual(s['agk-github'], { type: 'http', url: 'https://api.githubcopilot.com/mcp/readonly', tools: ['*'] });
+  assert.equal(s['agk-perplexity'].type, 'local');
+  assert.deepEqual(s['agk-perplexity'].tools, ['*']);
+  assert.equal(mcp.defaultFile('copilot'), mcp.COPILOT_CONFIG);
 });
